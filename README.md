@@ -15,11 +15,15 @@ This course is delivered in person by Martin John Hadley. The training materials
 
 # Working with these materials
 
-During the course you will need the materials in this repository ([https://github.com/martinjhnhadley/training_rss-two-day_interactive-dataviz](https://github.com/martinjhnhadley/training_rss-two-day_interactive-dataviz)). Here's a short URL [https://goo.gl/Dta4SK](https://goo.gl/Dta4SK).
+The lecture materials for this course are in this repository: ([https://github.com/martinjhnhadley/training_rss-two-day_interactive-dataviz](https://github.com/martinjhnhadley/training_rss-two-day_interactive-dataviz)). Here's a short URL [https://goo.gl/Dta4SK](https://goo.gl/Dta4SK).
 
-Click on "Clone or download" and select "Download as ZIP". Ensure to unzip the folders to a convenient location.
+We will be working with a number of example datasets which are kept in a separate repository: [https://github.com/martinjhnhadley/collated-rstats-training-materials](https://github.com/martinjhnhadley/collated-rstats-training-materials) here's a short URL: https://goo.gl/2LwAWh.
+
+Please navigate to both repositories and click on "Clone or download" and select "Download as ZIP". Ensure to unzip the folders to a convenient location.
 
 <img src="/download-repo.png" width="400">
+
+**Windows Users**: You need to ensure you extract the contents of the zip, which can be achieved by right-clicking on the zip and selecting "Extract All".
 
 # About this course
 
