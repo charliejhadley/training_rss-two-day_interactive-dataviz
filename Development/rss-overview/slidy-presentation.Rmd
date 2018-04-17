@@ -1,0 +1,22 @@
+---
+title: "Bullets in grid"
+output: 
+  slidy_presentation:
+    theme: default
+---
+
+# Slide
+
+<div class="row">
+  <div class="col-md-5" style="vertical-align:middle;">
+I'm some content!
+  </div>
+  <div class="col-md-7">
+- Import with `readr`
+- Reshape with `tidyr`
+- Filter, modify and query with `dplyr`
+- Visualise with `ggplot2`
+  </div>
+</div>
+
+Content before end of slide.

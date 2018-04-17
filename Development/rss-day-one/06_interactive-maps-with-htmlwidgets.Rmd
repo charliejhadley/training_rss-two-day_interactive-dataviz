@@ -1,0 +1,301 @@
+---
+title: "Interactive Maps with htmlwidgets"
+author: "Martin John Hadley"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+# Interactive maps with htmlwidgets
+
+We're going to introduce three libraries for creating interactive maps:
+
+- leaflet: a powerful library for creating highly customised presentation quality charts.
+
+- mapview: geared towards exploratory data analysis of geographical data.
+
+- mapedit: an extremely powerful tool for modifying geographical data.
+
+<br>
+
+Before we introduce these libraries, we must first discuss how to handle GIS data in R.
+
+---
+
+# rgdal, sp and sf
+
+If you've done GIS with R over the last few years, it's more than likely you've used a combination of the rgdal and sp packages.
+
+It's highly recommended that from now on you use the sf package, and if possible backport your code to sf.
+
+<hr>
+
+You will likely come across StackOverflow questions etc that continue to use rgdal and sp, it's definitely worth the effort to work exclusively in sf. 
+
+Plus... it's an easy way for you to contribute to the R Community with sp dependent solutions to question
+
+---
+
+# Why use sf?
+
+sf provides a consistent approach to working with GIS data in R, allowing us to do the following very easily:
+
+- import GIS data
+
+- wrangle GIS data using the tidyverse
+
+- perform geometric computations
+
+- visualise with ggplot, leaflet, mapview and mapedit
+
+Initial and future development of the package is partly funded and supported by the R Consortium.
+
+Read more about the package here [https://r-spatial.github.io/sf/](https://r-spatial.github.io/sf/)
+
+---
+
+# Working with shapefiles in sf
+
+Shapefiles are GIS datasets defining geographic regions, i.e. country borders.
+
+In the [martinjhnhadley/collated-rstats-training-materials](https://goo.gl/2LwAWh) repo [[https://goo.gl/2LwAWh](https://goo.gl/2LwAWh)] there's an RStudio project that helps us introduce how to work with shapefiles with sf:
+
+1. Open the sf-examples.RProj project
+
+1. Open the import-sf.R file
+
+1. Run these lines:
+
+```{r message=FALSE, warning=FALSE}
+library("tidyverse")
+library("sf")
+
+world_shapefiles <- read_sf("data/world-shape-files/")
+```
+
+---
+
+# Augmented tibbles
+
+```{r}
+class(world_shapefiles)
+```
+
+
+---
+
+# Pretty printing
+
+```{r}
+world_shapefiles
+```
+
+---
+
+# Wrangling sf objects
+
+```{r}
+world_shapefiles %>%
+  filter(CONTINENT == "Europe")
+```
+
+---
+
+# Tip: Inconsistent column headings
+
+It's really frustrating working with datasets with inconsistent column headings, I recommend always doing the following:
+
+```{r}
+world_shapefiles <- world_shapefiles %>%
+  setNames(. , tolower(colnames(.)))
+colnames(world_shapefiles)
+```
+
+---
+
+# mapedit
+
+mapedit is a powerful tool for modifying and augmenting sf objects:
+
+```{r, eval = FALSE}
+library("tidyverse")
+library("statesRcontiguous")
+library("mapedit")
+
+selected_states <- shp_all_us_states %>%
+  selectFeatures()
+```
+
+Sadly, `mapedit` elements don't play nicely in this presentation mode.
+
+---
+
+# mapview
+
+`mapview` provides all of the visual components of the `mapedit` package:
+
+```{r, eval=FALSE}
+library("tidyverse")
+library("statesRcontiguous")
+library("mapview")
+
+shp_all_us_states %>%
+  mapview()
+```
+
+Sadly, `mapview` elements don't play nicely in this presentation mode.
+
+---
+
+# Leaflet
+
+Leaflet allows us to make beautiful maps, it's way more fully featured than `mapview`.
+
+```{r, echo=FALSE}
+library("leaflet")
+library("widgetframe")
+lf_quakes <- quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet(width = "100%",
+          height = "300px") %>%
+  addProviderTiles(providers$Esri.OceanBasemap) %>%
+  addCircleMarkers(clusterOptions = markerClusterOptions(),
+                   popup = ~paste("Magnitude: ", mag))
+lf_quakes
+# frameWidget(lf_quakes)
+```
+
+Let's deep dive into the library.
+
+---
+
+# quakes
+
+There's a really useful example dataset in base R called `quakes`
+
+```{r}
+quakes %>%
+  head()
+```
+
+Let's convert this into an `sf` object.
+
+---
+
+`st_as_sf` needs the following information
+
+- `coords`: these must be given in longitude, latitude order.
+- `crs`: the coordinate references system, it's sensible to always use 4326 as a default.
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  head()
+```
+
+---
+
+# quakes map
+
+Just as with `ggplot2`, we need to create a leaflet object to which we add layers:
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet()
+```
+
+---
+
+`addProviderTiles` changes the base map ( see [rstudio.github.io/leaflet/basemaps.html](http://rstudio.github.io/leaflet/basemaps.html))
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet() %>%
+  addProviderTiles(providers$Esri.OceanBasemap)
+```
+
+---
+
+`addCircleMarkers` adds circles at each data point:
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet() %>%
+  addProviderTiles(providers$Esri.OceanBasemap) %>%
+  addCircleMarkers()
+```
+
+---
+
+Use `~column.name` to use columns in the visualisation:
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet() %>%
+  addProviderTiles(providers$Esri.OceanBasemap) %>%
+  addCircleMarkers(label = ~as.character(mag))
+```
+
+---
+
+`markerClusterOptions` allows us to cluster markers:
+
+```{r}
+quakes %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  leaflet(width = "100%",
+          height = "300px") %>%
+  addProviderTiles(providers$Esri.OceanBasemap) %>%
+  addCircleMarkers(label = ~as.character(mag),
+                   clusterOptions = markerClusterOptions())
+```
+
+---
+
+# Publishing htmlwidgets with RPubs
+
+[RPubs.com](rpubs.com) is a free and open platform for publishing and sharing htmlwidgets (and RMarkdown documents).
+
+Its's incredibly simple to publish to RPubs - simply click on the publish button in the htmlwidget viewer!
+
+> **Note that while documents hosted on RPubs are made public, the underlying code/.rmd files cannot be downloaded by others.**
+
+---
+
+# Exercise 1
+
+Create a new project which achieves the following:
+
+1. Reproducibly cleans the raw data from [martinjhnhadley/collated-rstats-training-materials/german-migrants](https://goo.gl/2LwAWh)
+
+1. Import the cleaned data
+
+1. Visualises all the unique locations with `leaflet`
+
+## Bonus Objectives:
+
+- When the cursor hovers over a point, show the name of the city **AND** the country.
+
+- Create a version of the map where send and receive locations are coloured differently.  
+
+---
+
+# Exercise 2
+
+Create a new project which achieves the following:
+
+1. Use the `statesRcontiguous` library to obtain only the **contiguous** USA
+
+1. Visualise this shapefile with `leaflet`
+
+1. Refer to [http://rstudio.github.io/leaflet/legends.html](http://rstudio.github.io/leaflet/legends.html) to colour the states according to the region that they belong to.
+
+

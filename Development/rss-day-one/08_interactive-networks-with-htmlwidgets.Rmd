@@ -1,0 +1,147 @@
+---
+title: "Interactive Networks with htmlwidgets"
+author: "Martin John Hadley"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+# Interactive networks with htmlwidgets
+
+There are a few different packages for creating interactive network diagrams, the only one we're going to cover is `visNetwork`.
+
+Before doing so, it's important we cover some basic points about network charts.
+
+---
+
+# Network layouts are largely aesthetic
+
+In general, the relative position of nodes within a network visualisation does not provide material information about the importance of that node.
+
+The next three slides contain a network diagram of exactly the same data but with very different layouts.
+
+---
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, opts.width = "100px"}
+library("tidyverse")
+library("igraph")
+library("tidygraph")
+library("visNetwork")
+library("RColorBrewer")
+library("widgetframe")
+
+got_nodes <- read_csv("data/GoT_nodes.csv")
+got_edges <- read_csv("data/GoT_edges.csv")
+
+superculture_colours <- tibble(
+  superculture = unique(got_nodes$superculture),
+  color = brewer.pal(12, "Paired")
+)
+
+got_nodes <- got_nodes %>%
+  left_join(superculture_colours) %>%
+  mutate(group = superculture)
+
+got_network <- tbl_graph(nodes = got_nodes, edges = got_edges)
+```
+
+```{r}
+got_network %>%
+  as.igraph() %>%
+  visIgraph() %>%
+  visOptions(highlightNearest = TRUE) %>%
+  visLegend(ncol = 2)
+```
+
+---
+
+
+```{r}
+got_network %>%
+  as.igraph() %>%
+  visIgraph(layout = "layout_on_grid") %>%
+  visOptions(highlightNearest = TRUE) %>%
+  visLegend(ncol = 2)
+```
+
+---
+
+```{r}
+got_network %>%
+  as.igraph() %>%
+  visIgraph(layout = "layout_with_lgl") %>%
+  visOptions(highlightNearest = TRUE) %>%
+  visLegend(ncol = 2)
+```
+
+---
+
+# Network layouts are largely aesthetic
+
+Most layout algorithms use non-deterministic physics simulations to decide on the end position of nodes.
+
+This is why the same network produced on two different computers (or at two different points in time) look different to one another.
+
+```{r, eval = FALSE}
+library(igraphdata)
+data("karate")
+karate %>%
+  visIgraph()
+```
+
+---
+
+# visNetwork
+
+`visNetwork` is an extremely fussy library, it needs tibbles with specific column names and positions in order to function.
+
+.pull-left[
+```{r, eval=FALSE}
+visn_nodes <- tibble(
+  id = 1:5,
+  label = letters[1:5]
+)
+```
+]
+
+.pull-right[
+```{r, eval = FALSE}
+visn_edges <- tibble(
+  from = c(2, 1, 3, 4, 5),
+  to = c(1, 4, 5, 1)
+)
+```
+]
+
+---
+
+```{r, echo = FALSE}
+visn_nodes <- tibble(
+  id = 1:5,
+  label = letters[1:5]
+)
+visn_edges <- tibble(
+  from = c(2, 1, 3, 4, 5),
+  to = c(1, 4, 5, 1, 2)
+)
+```
+
+
+```{r}
+visNetwork(visn_nodes,
+           visn_edges)
+```
+
+---
+
+# Exercise
+
+1. Load the collated-rstats-training-materials/got-network project
+
+1. Reproducibly wrangle the data into shape for visNetwork
+
+1. Visualise the network

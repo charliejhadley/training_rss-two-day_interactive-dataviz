@@ -1,0 +1,178 @@
+---
+title: "htmlwidgets"
+author: "Martin John Hadley"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+# htmlwidgets: JavaScript
+
+The interactive web is driven by JavaScript*.
+
+The majority of interactive elements that you use on websites are written in JavaScript - from interactive maps to auto-completing pop-up menus. 
+
+.pull-left[
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library("tidyverse")
+library("gapminder")
+library("highcharter")
+library("lubridate")
+
+continent_mean_pop_growth <- gapminder %>%
+  group_by(continent, year) %>%
+  summarise(mean.pop = mean(pop)) %>%
+  mutate(year = dmy(paste0("31-12-", year)))
+
+highchart(type = "stock") %>%
+  hc_add_series(
+    data = continent_mean_pop_growth,
+    type = "line",
+    hcaes(
+      x = year,
+      y = mean.pop,
+      group = continent
+    ),
+    marker = list(
+      enabled = TRUE
+    )
+  ) %>%
+  hc_legend(enabled = TRUE) %>%
+  hc_rangeSelector(enabled = FALSE) %>%
+  hc_scrollbar(enabled = FALSE) %>%
+  hc_navigator(enabled = FALSE) %>%
+  hc_title(text = "Continental Populations<br> (1952 - 2007)") %>%
+  hc_size(width = "100%", height = "300px")
+
+```
+]
+
+.pull-right[
+```{r, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library("tidyverse")
+library("leaflet")
+library("sf")
+library("gapminder")
+
+geojson_worldmap <- st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
+                            quiet = TRUE)
+geojson_worldmap <- invisible(geojson_worldmap %>%
+  left_join(gapminder %>%
+               filter(year == max(year)) , by = c("name" = "country")) %>%
+  filter(name != "Antarctica"))
+palette_pop <- colorNumeric("YlOrBr" , geojson_worldmap$pop, na.color = "#c0c1c4")
+geojson_worldmap %>%
+  leaflet(width = "300px",
+          height = "200px") %>%
+  addPolygons(fillColor = ~palette_pop(pop),
+              fillOpacity = 0.8,
+              color = "#000",
+              weight = 1,
+              popup = ~name)
+```
+]
+
+
+---
+
+# JavaScript Libraries
+
+As with R, there are hundreds of different JavaScript libraries designed for various visualisation tasks.
+
+Examples of these include:
+
+- D3
+
+- plotly
+
+- highcharts
+
+- vis.js
+
+- Google Charts
+
+If you get into conversation with JavaScript developers you might get into semantic arguments about libraries/frameworks. 
+
+We really don't care about these here.
+
+---
+
+# htmlwidgets: The Framework
+
+`highcharts` is a framework for building bindings between JavaScript libraries and the R language.
+
+R developers use the `highcharts` package to scaffold together R packages that allow R users [useRs] to build interactive things directly from R code.
+
+---
+
+# htmlwidgets: The Packages
+
+These R packages work like any other package, and there are many examples available on CRAN.
+
+Typically, an R package binds to just **one** JavaScript library.
+
+- `plotly` allows us to create plotly charts
+
+- `highcharter` allows us to create highcharts charts
+
+- `visNetwork` and `timevis` both bind to the visjs library but are used to create very different charts; network visualisations and Gantt charts, respectively.
+
+---
+
+# htmlwidgets.org
+
+The spiritual home of `htmlwidgets` is [htmlwidgets.org](http://htmlwidgets.org) and is maintained by the folks at RStudio.
+
+- [htmlwidgets.org](http://htmlwidgets.org) introduces the basics of building your own `htmlwidget` packages<sup>1</sup>
+
+- [htmlwidgets.org](http://htmlwidgets.org) has a showcase of the 13 most high-profile `htmlwidget` packages (many of which have been developed by RStudio themselves)
+
+- [htmlwidgets.org](http://htmlwidgets.org) has a gallery of many other `htmlwidget` packages.
+
+.footnote[
+[1] This is faaaar beyond the scope of today's course
+]
+
+---
+
+# htmlwidgets sanity check
+
+Every single `htmlwidget` package is completely unique in the way that data and chart options are specified.
+
+Why?
+
+- Underlying JavaScript libraries/frameworks are often completely different to one another.
+
+- Developers have a choice between an easy to use `htmlwidget` and a package that allows you to do *everything* you could do with the native JS library.
+
+- Developers have a choice in how `tibble` columns are specified to the chart; `"columns_as_strings"`, `naked_columns`, `~formula_columns`.
+---
+
+# Which libraries will we cover?
+
+We're going to introduce 6 very different `htmlwidgets` which fit (fairly) neatly into the following categories:
+
+- Maps
+
+  - leaflet
+  - mapview
+  
+- Charts
+
+  - highcharter
+  - plotly
+  
+- Networks
+
+  - visNetwork
+  
+- Tables
+
+  - DT

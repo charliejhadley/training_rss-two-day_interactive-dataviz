@@ -1,0 +1,184 @@
+---
+title: "Interactive Charts with highcharter"
+author: "Martin John Hadley"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library("tidyverse")
+library("fivethirtyeight")
+tarantino_swears <- tarantino %>%
+  filter(complete.cases(.)) %>%
+  count(word, movie) %>%
+  group_by(word) %>%
+  mutate(total.n = sum(n)) %>%
+  filter(total.n > 1) 
+```
+
+# Highcharter
+
+Highcharter uses the highcharts library to create extremely professional charts.
+
+However, it's extremely important to remember that this library cannot be used freely for commercial purposes:
+
+```{r, eval=FALSE}
+library("highcharter")
+```
+
+```{r, echo=FALSE}
+detach("package:highcharter", unload=TRUE)
+library("highcharter")
+```
+
+---
+
+# hchart and hcaes
+
+The highcharter library has been designed very much like `gglot2`:
+
+- `hchart` creates a chart
+- `hcaes` species the aesthetic mappings, using naked_column_names
+
+```{r, eval=FALSE}
+tarantino_swears %>%
+  hchart(type = "bar",
+         hcaes(
+           x = ,
+           y = ,
+           group = 
+         ))
+```
+
+---
+
+Highcharter orders the categories as they appear (uniquely) in the dataset:
+
+```{r, echo=FALSE}
+tarantino_swears %>%
+  hchart(type = "bar",
+         hcaes(
+           x = word,
+           y = n,
+           group = movie
+         ))
+```
+
+---
+
+# highcharter ordering
+
+Fixing the ordering of our bars is slightly complicated, the problem stems from there not being *values* for all combinations of words and movies.
+
+We can fix this with a bit of jerry rigging using `tidyr` and `dplyr`
+
+---
+
+```{r}
+tarantino %>%
+  filter(complete.cases(.)) %>%
+  count(word, movie) %>%
+  group_by(word) %>%
+  spread(movie, n, fill = 0)
+```
+
+---
+
+```{r}
+tarantino %>%
+  filter(complete.cases(.)) %>%
+  count(word, movie) %>%
+  group_by(word) %>%
+  spread(movie, n, fill = 0) %>%
+  gather(movie, count, 2:8)
+```
+
+---
+
+```{r}
+tarantino_swears <- tarantino %>%
+  filter(complete.cases(.)) %>%
+  count(word, movie) %>%
+  group_by(word) %>%
+  spread(movie, n, fill = 0) %>%
+  gather(movie, count, 2:8) %>%
+  mutate(total = sum(count)) %>%
+  arrange(desc(total))
+tarantino_swears
+```
+
+---
+
+# 
+
+```{r}
+tarantino_swears %>%
+  ungroup() %>%
+  mutate(word = fct_reorder(word, total)) %>%
+  hchart(type = "bar",
+         hcaes(
+           x = word,
+           y = count,
+           group = movie
+         ))
+```
+
+---
+
+# Highcharter customisation
+
+The developer of highcharter has made the package as close as possible to the underlying JavaScript library.
+
+The [api.highcharts.com](https://api.highcharts.com) pages inform us that to change the stacking of the bars we need to change the following options:
+
+> plotOptions.series.stacking
+
+In R we do the following:
+
+```{r, eval=FALSE}
+tarantino_swears %>%
+  ungroup() %>%
+  mutate(word = fct_reorder(word, total)) %>%
+  hchart(type = "bar",
+         hcaes(
+           x = word,
+           y = count,
+           group = movie
+         )) %>%
+  hc_plotOptions(series = list(stacking = "normal"))
+```
+
+---
+
+```{r, echo=FALSE}
+tarantino_swears %>%
+  ungroup() %>%
+  mutate(word = fct_reorder(word, total)) %>%
+  hchart(type = "bar",
+         hcaes(
+           x = word,
+           y = count,
+           group = movie
+         )) %>%
+  hc_plotOptions(series = list(stacking = "normal")) %>%
+  hc_size(height = "100%")
+```
+
+---
+
+# Exercise
+
+Create a new project which achieves the following:
+
+1. Reproducibly cleans the raw data from [martinjhnhadley/collated-rstats-training-materials/german-migrants](https://goo.gl/2LwAWh)
+
+1. Import the cleaned data
+
+1. Use either `plotly` or `highcharter` to visualise the breakdown of receive countries from each send country.
+
+1. Barcharts are one method for displaying this data, but feel free to explore or suggest alternatives.

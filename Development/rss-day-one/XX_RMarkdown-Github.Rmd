@@ -1,0 +1,12 @@
+---
+title: "XX RMarkdown & Github"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Collated R Examples
+
+https://github.com/martinjhnhadley/collated-rstats-training-materials/tree/master/birthday-factors

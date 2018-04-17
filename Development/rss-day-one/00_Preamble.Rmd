@@ -1,0 +1,49 @@
+---
+title: "RSS: Interactive Visualisations with R"
+subtitle: "Day One: Tidyverse, htmlwidgets and RMarkdown"
+output:
+  slidy_presentation:
+    theme: default
+css: "www/teachingnotes.css"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+# Timetable for the day
+
+Today's timetable is roughly as follows:
+
+```{r}
+timetable <- list(
+  "09:30 - 10:30" = "Up and Running with R and RStudio",
+  "10:30 - 11:00" = "Setting ourselves up for reproducible data visualisations",
+  "11:00 - 11:20" = "COFFEE",
+  "11:20 - 12:00" = "Wrangling data and Exploratory Data Analysis in RStudio with the Tidyverse",
+  "12:00 - 13:00" = "Interactive maps with htmlwidgets",
+  "13:00 - 13:45" = "LUNCH",
+  "13:45 - 14:30" = "Interactive charts and network diagrams with htmlwidgets",
+  "14:30 - 15:00" = "Interactive reports and presentations with RMarkdown",
+  "15:00 - 15:20" = "COFFEE",
+  "15:20 - 16:00" = "Inserting htmlwidgets into RMarkdown",
+  "16:00 - 17:00" = "RMarkdown to the web (and back)"
+)
+library("tidyverse")
+timetable <- tibble(
+  times = names(timetable),
+  topic = as.character(timetable)
+)
+knitr::kable(timetable)
+```
+
+# Notes on course expectations
+
+This course is designed to introduce you to the basics of creating interactive data visualisations using R; with two very different technologies:
+
+No prior knowledge of R is expected, the necessary "programming patterns" and workflows will be introduced through the course.
+
+Please note that this course will **NOT** provide a sufficient overview of the R language to start implementing complex analyses or how to write efficient programs with R.
+
+>* This course shows you how to make Shiny stuff.

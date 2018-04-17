@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Exploratory Data Analysis with ggplot2</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Martin John Hadley" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Exploratory Data Analysis with ggplot2
+### Martin John Hadley
+
+---
+
+
+
+
+
+## Exploratory Data Analysis and ggplot2
+
+The interactive charts that we're going to build later today are primarily useful for communicating your understand and analysis of your datasets.
+
+Before getting to that point, we need to understand the basics of how to do some exploratory data analysis with the tidyverse.
+
+&lt;br&gt;
+&lt;br&gt;
+
+&gt; Exploratory data analysis is about generating an understanding of your data, to suggest potential hypotheses and gain insight on what statistical tools might be appropriate for handling the data
+
+---
+
+## Understanding our data
+
+Before progressing with visualising datasets, it's important we understand exactly what our data is.
+
+`data.frame`s are the general purpose rectangular data structure in R, most folks are familiar with it. 
+
+The `tidyverse`, uses a slightly different thing:
+
+
+```r
+library("tidyverse")
+journeys &lt;- read_csv("data/journeys.csv")
+```
+
+
+.pull-left[
+
+```r
+class(iris)
+```
+
+```
+## [1] "data.frame"
+```
+]
+
+.pull-right[
+
+```r
+class(journeys)
+```
+
+```
+## [1] "tbl_df"     "tbl"        "data.frame"
+```
+]
+
+---
+
+## tibbles vs data.frames
+
+We can *almost* interchangeably refer to `tibbles` and `data.frames`, the primary difference we see is how they appear in the console.
+
+### Print methods...
+
+Technically, this means that `tibble` has a different "print method" to `data.frame`.
+
+`tibble`'s print method is very smart! It includes information about the size and type of data inside your object.
+
+---
+
+
+```r
+iris %&gt;%
+  head()
+```
+
+```
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+## 1          5.1         3.5          1.4         0.2  setosa
+## 2          4.9         3.0          1.4         0.2  setosa
+## 3          4.7         3.2          1.3         0.2  setosa
+## 4          4.6         3.1          1.5         0.2  setosa
+## 5          5.0         3.6          1.4         0.2  setosa
+## 6          5.4         3.9          1.7         0.4  setosa
+```
+
+
+```r
+journeys %&gt;%
+  head()
+```
+
+```
+## # A tibble: 6 x 11
+##   start.country start.city start.latitude start.longitude end.country
+##   &lt;chr&gt;         &lt;chr&gt;               &lt;dbl&gt;           &lt;dbl&gt; &lt;chr&gt;      
+## 1 DEU           Mockethal            51.0            14.0 USA        
+## 2 DEU           Mockethal            51.0            14.0 USA        
+## 3 DEU           Mockethal            51.0            14.0 USA        
+## 4 DEU           Mockethal            51.0            14.0 USA        
+## 5 DEU           Mockethal            51.0            14.0 USA        
+## 6 DEU           Mockethal            51.0            14.0 USA        
+## # ... with 6 more variables: end.city &lt;chr&gt;, end.latitude &lt;dbl&gt;,
+## #   end.longitude &lt;dbl&gt;, date &lt;date&gt;, journey &lt;chr&gt;,
+## #   number.of.letters &lt;int&gt;
+```
+
+---
+
+## Grouping data thanks to tibbles
+
+Tibbles also support `groups`, which allows for hierarchical groupings of data.
+
+There are two categories of things we can do with groups:
+
+- Insert/tally groups: with either `group_by` or `count`, respectively
+
+- Insert/modify columns: with `mutate` or `summarise`
+
+---
+
+## Differences between count and group_by
+
+.pull-left[
+
+```r
+journeys %&gt;%
+  count(start.country, 
+        end.country)
+```
+
+- Counts number of observations in each group
+
+- Removes all columns not specified to `count`
+
+- Removes groups
+
+]
+
+.pull-right[
+
+```r
+journeys %&gt;%
+  group_by(start.country, 
+           end.country)
+```
+
+- Inserts groups
+
+- Groups can be used for later calculations
+
+]
+
+---
+
+## Tibbles are greedy for groups
+
+You **must** remove groups manually with `ungroup` otherwise they'll stay around forever:
+
+
+```r
+journeys %&gt;%
+  group_by(start.country, end.country) %&gt;%
+  ungroup()
+```
+
+---
+
+### summarise
+`summarise` drops all columns that are not included in `groups`:
+
+
+```r
+journeys %&gt;%
+  group_by(start.country, end.country) %&gt;%
+  summarise(median.letters = median(number.of.letters))
+```
+
+
+--
+### mutate
+`mutate` inserts a new column on the far-right of the `tibble`:
+
+
+```r
+journeys %&gt;%
+  group_by(start.country, end.country) %&gt;%
+  mutate(median.letters = median(number.of.letters)) %&gt;%
+  select(median.letters, everything())
+```
+
+... It's often convenient to use `select(median.letters, everything())` to move the new column to the far-left of the `tibble`.
+
+---
+
+
+```r
+journeys %&gt;%
+  group_by(start.country, end.country) %&gt;%
+  summarise(total.letters = sum(number.of.letters)) %&gt;%
+  glimpse()
+```
+
+```
+## Observations: 26
+## Variables: 3
+## $ start.country &lt;chr&gt; "AUS", "AUT", "BEL", "BEL", "CAN", "CAN", "CHE",...
+## $ end.country   &lt;chr&gt; "DEU", "DEU", "DEU", "GER", "DEU", "GER", "DEU",...
+## $ total.letters &lt;int&gt; 79, 1, 12, 4, 20, 4, 16, 2, 30, 6, 34, 27, 339, ...
+```
+
+
+```r
+journeys %&gt;%
+  group_by(start.country, end.country) %&gt;%
+  mutate(total.letters = sum(number.of.letters)) %&gt;%
+  glimpse()
+```
+
+```
+## Observations: 1,719
+## Variables: 12
+## $ start.country     &lt;chr&gt; "DEU", "DEU", "DEU", "DEU", "DEU", "DEU", "D...
+## $ start.city        &lt;chr&gt; "Mockethal", "Mockethal", "Mockethal", "Mock...
+## $ start.latitude    &lt;dbl&gt; 50.97178, 50.97178, 50.97178, 50.97178, 50.9...
+## $ start.longitude   &lt;dbl&gt; 13.96013, 13.96013, 13.96013, 13.96013, 13.9...
+## $ end.country       &lt;chr&gt; "USA", "USA", "USA", "USA", "USA", "USA", "U...
+## $ end.city          &lt;chr&gt; "New", "New", "New", "New", "New", "New", "N...
+## $ end.latitude      &lt;dbl&gt; 40.71278, 40.71278, 40.71278, 40.71278, 40.7...
+## $ end.longitude     &lt;dbl&gt; -74.00594, -74.00594, -74.00594, -74.00594, ...
+## $ date              &lt;date&gt; 1905-02-25, 1905-03-09, 1905-03-11, 1905-03...
+## $ journey           &lt;chr&gt; "13.960129 50.97178 13.960129 50.97178", "13...
+## $ number.of.letters &lt;int&gt; 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, ...
+## $ total.letters     &lt;int&gt; 339, 339, 339, 339, 339, 339, 339, 339, 339,...
+```
+
+---
+
+## Static charts with ggplot2
+
+`ggplot2` is tremendously powerful and flexible for creating static charts for exploratory data analysis, also for print!
+
+&lt;img src="ggsaves/german-migrants_receiving-countries.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+There are two really important things we need to remember when using it:
+
+- It uses **non-standard evaluation** to allow naked column names to be used in code
+
+- It pre-dates `%&gt;%` and instead uses `+` for adding layers to a `ggplot` object
+
+---
+
+## ggplot(aes())
+
+The `aes` function specifies the mappings between variables in your data and the visual components of the chart:
+
+
+```r
+journeys %&gt;%
+  group_by(end.country) %&gt;%
+  summarise(total.letters = sum(number.of.letters)) %&gt;%
+  ggplot(aes(x = end.country,
+             y = total.letters))
+```
+
+---
+
+&lt;img src="04_exploratory-data-analysis-with-ggplot2_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## geom_col()
+
+geoms are objects that populate our charts, dependent on the aesthetic mappings between the data and the chart's internal "coordinate system"
+
+
+```r
+journeys %&gt;%
+  group_by(end.country) %&gt;%
+  summarise(total.letters = sum(number.of.letters)) %&gt;%
+  ggplot(aes(x = end.country,
+             y = total.letters)) + 
+  geom_col()
+```
+
+---
+
+&lt;img src="04_exploratory-data-analysis-with-ggplot2_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Ordering variables in charts
+
+In `ggplot2`, and the interactive charts we'll be creating later today, it's crucial that we understand how to order variables in a chart.
+
+This is often (*but not always*) achieved through the use of `factors`:
+
+- factors are categorical variables (there are a limited set of values allowed in the data structure)
+
+- ordered factors have an internal ordering (**levels**) that affects how other functions treat them
+
+- ordered factors are printed in the order observations appear, not in the order specified by the **levels**
+
+---
+
+## Birthday factors example
+
+In the [martinjhnhadley/collated-rstats-training-materials](https://goo.gl/2LwAWh) repo [[https://goo.gl/2LwAWh](https://goo.gl/2LwAWh)] there's an RStudio project that helps us introduce factors and the `forcats` library.
+
+1. Open the `birthday-factors.RProj` project
+
+1. Open the `birthday-factors.R` file
+
+1. Run these lines:
+
+
+```r
+library("tidyverse")
+
+birthdays &lt;- read_csv("data/birthdays.csv")
+```
+
+---
+
+## Birthday factors example
+
+.pull-left[
+
+
+```r
+birthdays
+```
+
+
+```
+## # A tibble: 8 x 3
+##   name    birth.month   age
+##   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt;
+## 1 Riley   December      30.
+## 2 Taylor  September     29.
+## 3 Jo      September     24.
+## 4 Elliott December      31.
+## 5 Charlie January       38.
+## 6 Sean    January       32.
+## 7 Sam     April         27.
+## 8 Alex    April         44.
+```
+]
+
+.pull-right[
+
+The dataset has the birth month and age of a number of different people, we're interested in creating the following chart.
+
+&lt;img src="ggsaves/gg_birthday_factors.png" width="2000" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+# ggplot2 without factors
+
+Let's follow the steps from building our previous `ggplot2` to build the visualisation we just saw:
+
+1. Use `aes` to map our columns to aesthetics of the chart
+
+1. Choose an appropriate `geom_*` for the chart
+
+1. Flip the coordinates of the chart
+
+--
+
+
+```r
+birthdays %&gt;%
+  ggplot(aes(
+    x = ,
+    y = 
+  )) +
+  geom_line() +
+  coord_flip()
+```
+
+---
+
+# What's wrong with the chart?
+
+&lt;img src="ggsaves/gg_nofactor_birthdays.png" width="2000" style="display: block; margin: auto;" /&gt;
+
+---
+
+# forcats
+
+`forcats` is part of the tidyverse and radically simplifies the process of working with factors.
+
+`fct_relevel` allows us to specify a canonical order for elements within a factor:
+
+
+```r
+fct_relevel(c("September",
+            "January",
+            "December",
+            "April"),
+          levels = month.name)
+```
+
+```
+## Warning: Outer names are only allowed for unnamed scalar atomic inputs
+```
+
+```
+## Warning: Unknown levels in `f`: February, March, May, June, July, August,
+## October, November
+```
+
+```
+## [1] September January   December  April    
+## Levels: January April September December
+```
+
+---
+
+# aes(x = fct_relevel(...))
+
+
+```r
+birthdays %&gt;%
+  ggplot(aes(
+    x = fct_relevel(birth.month, 
+                    month.name),
+    y = age
+  )) +
+  geom_line() +
+  coord_flip()
+```
+
+
+&lt;img src="ggsaves/gg_nofactor_birthdays.png" width="3200" style="display: block; margin: auto;" /&gt;
+
+---
+
+# aes(x = fct_relevel(...) %&gt;% fct_rev())
+
+
+```r
+birthdays %&gt;%
+  ggplot(aes(
+    x = fct_relevel(birth.month, 
+                    month.name) %&gt;%
+      fct_rev(),
+    y = age
+  )) +
+  geom_line() +
+  coord_flip()
+```
+
+
+&lt;img src="ggsaves/gg_nofactor_birthdays.png" width="3200" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Summary
+
+The `tidyverse` provides a wide range of different tools for importing, wrangling and exploring datasets.
+
+The `ggplot2` library is very powerful for creating quick static charts.
+
+When scripting charts it's often necessary to think carefully about how a package chooses to order categorical aesthetics.
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,123 @@
+---
+title: "Interactive Charts with plotly"
+author: "Martin John Hadley"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library("tidyverse")
+library("fivethirtyeight")
+library("plotly")
+tarantino_swears <- tarantino %>%
+  filter(complete.cases(.)) %>%
+  count(word, movie) %>%
+  group_by(word) %>%
+  mutate(total.n = sum(n)) %>%
+  filter(total.n > 1) 
+```
+
+
+# plotly
+
+- `plot_ly` creates a plotly object to which we add layers
+- `add_traces` automatically decides the series type based on the data
+- columns must be specified as formula (~column.name)
+
+```{r message=FALSE, warning=FALSE, eval = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ,
+            x = ,
+            color = )
+```
+
+---
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~word,
+            x = ~n,
+            color = ~movie)
+```
+
+---
+
+# Ordering with factors
+
+```{r, eval = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~fct_reorder(word, total.n),
+            x = ~n,
+            color = ~movie)
+```
+
+
+---
+
+```{r, echo = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~fct_reorder(word, total.n),
+            x = ~n,
+            color = ~movie)
+```
+
+---
+
+# layout
+
+Unfortunately, plotly isn't that smart aboyt sizing axes labels. We use the `layout` function to affect how the chart appears:
+
+```{r, eval = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~fct_reorder(word, total.n),
+            x = ~n,
+            color = ~movie) %>%
+  layout(margins = list(l = 100))
+```
+
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~fct_reorder(word, total.n),
+            x = ~n,
+            color = ~movie) %>%
+  layout(margins = list(l = 100))
+```
+
+---
+
+# Stacking with barmode
+
+```{r, eval = FALSE}
+tarantino_swears %>%
+  plot_ly() %>%
+  add_trace(y = ~fct_reorder(word, total.n),
+            x = ~n,
+            color = ~movie) %>%
+  layout(margins = list(l = 100),
+         barmode = "stack")
+```
+
+---
+
+## Learning more about plotly
+
+We've not really scratched the surface of what's possible with `plotly`, there are a vast range of different visualisation options available. See [https://plot.ly/r/](https://plot.ly/r/) for comprehensive showcase of the different chart types you can use.
+
+There's an online book about `plotly` currently being drafted here - [cpsievert.github.io/plotly_book/](http://cpsievert.github.io/plotly_book/). I recommend this with a bit of caution at the moment, it's not yet complete.
+
+Of course, there are plenty of questions about the `plotly` library on StackOverflow: [https://stackoverflow.com/questions/tagged/plotly+r](https://stackoverflow.com/questions/tagged/plotly+r). 
+
+Remember if you ask your own questions on StackOverflow to provide a [reproducible example](https://stackoverflow.com/a/5963610/1659890) of your problem.
