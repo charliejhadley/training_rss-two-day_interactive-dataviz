@@ -1,10 +1,15 @@
 ---
 title: "RSS: Interactive Visualisations with R"
+author: "Martin John Hadley"
 output:
-  slidy_presentation:
-    theme: defaul
-css: "www/teachingnotes.css"
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
 ---
+
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path='Figs/',
@@ -15,51 +20,54 @@ knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path='Figs/',
 
 This course is entirely self-contained, the lecturer notes and exercises have been written using RMarkdown. 
 
-The course is split into three different types of activity:
+The course is split into three different types of activity.
 
-> - Lecture slides
->    - These are written in RMarkdown, which is a technology you'll learn how to use in the first day of training. <br>
-    You'll be shown how to make the lecture slides work on your machine at the end of the day.
-> - Live/group coding
->    - Most of the exercises we'll go through are "live coding exercises", the lecturer will write code that you'll copy to your machine. What we end up building together will be very dependent on what you're interested in as a group.<br>
-    At the end of each section the lecturer will provide a download link for the **exact** code on their machines.
-> - Exercises
->    - There are a set of exercises in the materials that might be included in the course itself or else you might be encouraged to work on after the course. <br>
-    As the live coding sections of the course are unique for each class, it might be that we cover the learning points from the exercises in our group work.
+---
+
+# Lecture slides
+
+These are written in RMarkdown, which is a technology you'll learn how to use in the first day of training.
+
+> You'll be shown how to make the lecture slides work on your machine at the end of the day.
+
+---
+
+# Live/group coding
+
+Most of the exercises we'll go through are "live coding exercises", the lecturer will write code that you'll copy to your machine. What we end up building together will be very dependent on what you're interested in as a group.
+
+> At the end of each section the lecturer will provide a download link for the **exact** code on their machines.
+
+---
+
+# Exercises
+
+There are a set of exercises in the materials that might be included in the course itself or else you might be encouraged to work on after the course.
+
+> As the live coding sections of the course are unique for each class, it might be that we cover the learning points from the exercises in our group work.
+
+---
 
 # Timetable Overview
 
 This course runs over two days, each day we cover the following topics:
 
-<div class='row'>
-
-<div class='col-sm-6'>
-
-<center>
+.pull-left[
 **Day One**
-</center>
-
 - Up and running with RStudio
 - Reproducible dataviz workflows with the tidyverse
 - Static charts with `ggplot2`
 - Interactive charts with `htmlwidgets`
 - Combining text, charts and interactive stuff with RMarkdown
+]
 
-</div>
-
-<div class='col-sm-6'>
-
-<center>
+.pull-right[
 **Day Two**
-</center>
-
-> - `shiny`
-> - Combining `htmlwidgets` with `shiny`
-> - Publishing interactive web apps using `shiny`
-
-</div>
-
-</div>
+- `shiny`
+- Combining `htmlwidgets` with `shiny`
+- Publishing interactive web apps using `shiny`
+]
+---
 
 # What do you know?
 
